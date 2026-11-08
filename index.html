@@ -86,12 +86,10 @@
         <div id="view-result" class="view-section">
             <h3 style="color: #2b4533;">ผลการวิเคราะห์</h3>
             <div style="background: white; padding: 15px; border-radius: 15px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 10px;">
-                <div id="resultStatus" style="padding: 8px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px; background: #f8d7da; color: #721c24;">
-                    ⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)
-                </div>
-                <p><b>ชื่อพืช:</b> ไมยราบยักษ์ (Giant Sensitive Plant)</p>
-                <p><b>ระดับความมั่นใจ AI:</b> 98.4%</p>
-                <p><b>คำแนะนำ:</b> ควรกำจัดทันทีเพื่อป้องกันการแย่งสารอาหารจากพืชท้องถิ่น</p>
+                <div id="resultBox" style="padding: 8px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px;"></div>
+                <p><b>ชื่อพืช:</b> <span id="plantName">-</span></p>
+                <p><b>ระดับความมั่นใจ AI:</b> <span id="plantConfidence">-</span></p>
+                <p><b>คำแนะนำ:</b> <span id="plantAdvice">-</span></p>
                 <button class="btn-primary" onclick="alert('บันทึกข้อมูลและพิกัดลงระบบ CSV สำเร็จ!'); switchView('home');">บันทึกข้อมูลลงระบบ</button>
             </div>
         </div>
@@ -117,6 +115,37 @@
 </div>
 
 <script>
+    const plantDatabase = [
+        {
+            name: "ไมยราบยักษ์ (Giant Sensitive Plant)",
+            status: "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)",
+            bgColor: "#f8d7da", color: "#721c24",
+            confidence: "98.4%",
+            advice: "ควรกำจัดทันทีเพื่อป้องกันการแย่งสารอาหารจากพืชท้องถิ่น"
+        },
+        {
+            name: "ยางพารา (Para Rubber Tree)",
+            status: "✅ พืชเศรษฐกิจท้องถิ่น (Local Species)",
+            bgColor: "#d1e7dd", color: "#0f5132",
+            confidence: "95.2%",
+            advice: "เป็นพืชปลูกเศรษฐกิจ ไม่ใช่พืชรุกรานธรรมชาติ"
+        },
+        {
+            name: "สาบเสือ (Siam Weed)",
+            status: "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)",
+            bgColor: "#f8d7da", color: "#721c24",
+            confidence: "91.8%",
+            advice: "ควรควบคุมการแพร่กระจายเนื่องจากเติบโตเร็วและคลุมดิน"
+        },
+        {
+            name: "สัก (Teak)",
+            status: "✅ พืชป่าดั้งเดิม (Local Species)",
+            bgColor: "#d1e7dd", color: "#0f5132",
+            confidence: "97.5%",
+            advice: "เป็นไม้พืชป่าดั้งเดิม ควรอนุรักษ์และสงวนพื้นที่"
+        }
+    ];
+
     function switchView(viewName) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -141,7 +170,23 @@
             alert('กรุณาเลือกรูปภาพพืชก่อนทำการสแกน!');
             return;
         }
+        
         alert('กำลังประมวลผลภาพถ่ายด้วยโมเดล AI...');
+        
+        // สุ่มเลือกข้อมูลพืชจากรายการ เพื่อให้เวลาเปลี่ยนรูปผลลัพธ์จะเปลี่ยนตาม
+        const randomIndex = Math.floor(Math.random() * plantDatabase.length);
+        const selected = plantDatabase[randomIndex];
+
+        document.getElementById('resultBox.textContent').innerHTML = selected.status; // fix target
+        const rBox = document.getElementById('resultBox');
+        rBox.innerText = selected.status;
+        rBox.style.backgroundColor = selected.bgColor;
+        rBox.style.color = selected.color;
+
+        document.getElementById('plantName').innerText = selected.name;
+        document.getElementById('plantConfidence').innerText = selected.confidence;
+        document.getElementById('plantAdvice').innerText = selected.advice;
+
         setTimeout(() => {
             switchView('result');
         }, 800);
