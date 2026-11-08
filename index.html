@@ -110,6 +110,7 @@
     <div class="nav-bar">
         <div class="nav-item active" id="nav-home" onclick="switchView('home')">🏠<br>หน้าหลัก</div>
         <div class="nav-item" id="nav-scan" onclick="switchView('scan')">📸<br>สแกนพืช</div>
+        <div class="nav-item" id="nav-result-tab" onclick="switchView('result')" style="color: #d97706; font-weight: bold;">⭐<br>ผลลัพธ์</div>
         <div class="nav-item" id="nav-map" onclick="switchView('map')">🗺️<br>แผนที่</div>
     </div>
 </div>
@@ -157,7 +158,21 @@
             document.getElementById('view-scan').classList.add('active');
             document.getElementById('nav-scan').classList.add('active');
         } else if(viewName === 'result') {
+            // ถ้าเข้าหน้าผลลัพธ์โดยยังไม่ได้สุ่ม ให้สุ่มข้อมูลตัวอย่างขึ้นมาโชว์ทันที
+            const randomIndex = Math.floor(Math.random() * plantDatabase.length);
+            const selected = plantDatabase[randomIndex];
+
+            const rBox = document.getElementById('resultBox');
+            rBox.innerText = selected.status;
+            rBox.style.backgroundColor = selected.bgColor;
+            rBox.style.color = selected.color;
+
+            document.getElementById('plantName').innerText = selected.name;
+            document.getElementById('plantConfidence').innerText = selected.confidence;
+            document.getElementById('plantAdvice').innerText = selected.advice;
+
             document.getElementById('view-result').classList.add('active');
+            document.getElementById('nav-result-tab').classList.add('active');
         } else if(viewName === 'map') {
             document.getElementById('view-map').classList.add('active');
             document.getElementById('nav-map').classList.add('active');
@@ -171,8 +186,7 @@
             return;
         }
         
-        alert('กำลังประมวลผลภาพถ่ายด้วยโมเดล AI...');
-        
+        // สุ่มเลือกข้อมูลพืช
         const randomIndex = Math.floor(Math.random() * plantDatabase.length);
         const selected = plantDatabase[randomIndex];
 
@@ -185,9 +199,8 @@
         document.getElementById('plantConfidence').innerText = selected.confidence;
         document.getElementById('plantAdvice').innerText = selected.advice;
 
-        setTimeout(() => {
-            switchView('result');
-        }, 800);
+        // สลับไปหน้าผลลัพธ์ทันที
+        switchView('result');
     }
 </script>
 
