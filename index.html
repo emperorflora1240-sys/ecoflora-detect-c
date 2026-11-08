@@ -173,11 +173,9 @@
         
         alert('กำลังประมวลผลภาพถ่ายด้วยโมเดล AI...');
         
-        // สุ่มเลือกข้อมูลพืชจากรายการ เพื่อให้เวลาเปลี่ยนรูปผลลัพธ์จะเปลี่ยนตาม
         const randomIndex = Math.floor(Math.random() * plantDatabase.length);
         const selected = plantDatabase[randomIndex];
 
-        document.getElementById('resultBox.textContent').innerHTML = selected.status; // fix target
         const rBox = document.getElementById('resultBox');
         rBox.innerText = selected.status;
         rBox.style.backgroundColor = selected.bgColor;
