@@ -3,36 +3,45 @@
 #include <string.h>
 
 typedef struct {
-    char plantName[100];
-    char status[50]; // เช่น Local Species หรือ Invasive Species
-    float latitude;
-    float longitude;
-} PlantRecord;
+    char imageName[150]; // ชื่อไฟล์รูปภาพที่อัปโหลด (เช่น plant_01.jpg)
+    char plantName[100]; // ชื่อพืช
+    char status[50];     // สถานะ: Local Species หรือ Invasive Species
+    float latitude;      // ละติจูด
+    float longitude;     // ลองจิจูด
+} PlantImageRecord;
 
-void saveRecord(PlantRecord p) {
-    FILE *file = fopen("plant_log.csv", "a");
+void saveImageRecord(PlantImageRecord p) {
+    FILE *file = fopen("plant_image_log.csv", "a");
     if (file == NULL) {
         printf("ไม่สามารถเปิดไฟล์ฐานข้อมูลได้!\n");
         return;
     }
-    fprintf(file, "%s,%s,%.6f,%.6f\n", p.plantName, p.status, p.latitude, p.longitude);
+    // บันทึกข้อมูลลงในรูปแบบ CSV (ชื่อรูป, ชื่อพืช, สถานะ, ละติจูด, ลองจิจูด)
+    fprintf(file, "%s,%s,%s,%.6f,%.6f\n", p.imageName, p.plantName, p.status, p.latitude, p.longitude);
     fclose(file);
-    printf("บันทึกข้อมูลพืชและพิกัดลงระบบสำเร็จ!\n");
+    printf("\n[สำเร็จ] อัปโหลดรูปภาพและบันทึกข้อมูลพิกัดลงระบบเรียบร้อยแล้ว!\n");
 }
 
 int main() {
-    PlantRecord p;
-    printf("=== EcoFlora Detect (C Console System) ===\n");
-    printf("ระบุชื่อพืช: ");
+    PlantImageRecord p;
+    
+    printf("=== EcoFlora Detect - Image Upload & Scanner System ===\n");
+    printf("ระบุชื่อไฟล์รูปภาพที่ต้องการอัปโหลด (เช่น leaf1.jpg): ");
+    scanf(" %[^\n]s", p.imageName);
+    
+    printf("ระบุชื่อพืช (จากการวิเคราะห์ของ AI): ");
     scanf(" %[^\n]s", p.plantName);
-    printf("สถานะ (Local/Invasive): ");
+    
+    printf("ระบุสถานะพืช (Local Species / Invasive Species): ");
     scanf(" %[^\n]s", p.status);
-    printf("ละติจูด (Latitude): ");
+    
+    printf("ระบุพิกัดละติจูด (Latitude): ");
     scanf("%f", &p.latitude);
-    printf("ลองจิจูด (Longitude): ");
+    
+    printf("ระบุพิกัดลองจิจูด (Longitude): ");
     scanf("%f", &p.longitude);
 
-    saveRecord(p);
+    saveImageRecord(p);
+    
     return 0;
 }
-```[cite: 1]
