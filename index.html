@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoFlora Detect</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #2b4533; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .phone-container { width: 390px; height: 800px; background: #fdfbf7; border-radius: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); display: flex; flex-direction: column; overflow: hidden; position: relative; border: 8px solid #3c5a43; }
+        .header { padding: 20px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; }
+        .profile-section { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; background: #3c5a43; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; }
+        .content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .welcome-card { background: #eef2ed; padding: 20px; border-radius: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .welcome-card h2 { color: #2b4533; font-size: 20px; }
+        .welcome-card p { color: #555; font-size: 13px; line-height: 1.4; }
+        .btn-primary { background: #3c5a43; color: white; border: none; padding: 12px 24px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-primary:hover { background: #2b4533; }
+        .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .mini-card { background: white; padding: 15px; border-radius: 15px; border: 1px solid #e0e0e0; cursor: pointer; }
+        .mini-card h4 { font-size: 14px; color: #3c5a43; margin-bottom: 5px; }
+        .mini-card p { font-size: 11px; color: #666; }
+        .nav-bar { height: 65px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; }
+        .nav-item { text-align: center; font-size: 11px; color: #777; cursor: pointer; }
+        .nav-item.active { color: #3c5a43; font-weight: bold; }
+        .view-section { display: none; flex-direction: column; gap: 15px; }
+        .view-section.active { display: flex; }
+        input[type="file"], input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 10px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    <!-- Header -->
+    <div class="header">
+        <div class="profile-section">
+            <div class="avatar">EF</div>
+            <div>
+                <h4 style="font-size: 14px; color: #2b4533;">EcoFlora Detect</h4>
+                <p style="font-size: 11px; color: #666;">ระบบตรวจจับพืชป่าและเอเลี่ยนสปีชีส์</p>
+            </div>
+        </div>
+        <span style="background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">ออนไลน์</span>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content">
+        <!-- หน้าแรก (Home) -->
+        <div id="view-home" class="view-section active">
+            <div class="welcome-card">
+                <div style="font-size: 40px;">🌿</div>
+                <h2>ยินดีต้อนรับ เจ้าหน้าที่พิทักษ์ป่า</h2>
+                <p>ร่วมปกป้องระบบนิเวศป่าไม้ดั้งเดิม ตรวจสอบและคัดกรองพืชเอเลี่ยนสปีชีส์ได้อย่างแม่นยำ</p>
+                <button class="btn-primary" onclick="switchView('scan')">เริ่มสแกนพืชทันที</button>
+            </div>
+
+            <div class="grid-cards">
+                <div class="mini-card" onclick="switchView('scan')">
+                    <h4>📸 สแกนพืช</h4>
+                    <p>อัปโหลดภาพใบหรือลำต้นเพื่อวิเคราะห์ AI</p>
+                </div>
+                <div class="mini-card" onclick="switchView('map')">
+                    <h4>🗺️ แผนที่ป่า</h4>
+                    <p>ดูพิกัดจุดพบพืชและรายงานพื้นที่</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- หน้าสแกน / อัปโหลด (Scan/Upload) -->
+        <div id="view-scan" class="view-section">
+            <h3 style="color: #2b4533;">อัปโหลดรูปภาพพืช</h3>
+            <p style="font-size: 12px; color: #666;">ถ่ายภาพหรือเลือกไฟล์ภาพใบ/ลำต้นพืชในเขตพื้นที่ป่า</p>
+            
+            <div style="border: 2px dashed #3c5a43; padding: 25px; text-align: center; border-radius: 15px; background: #fff;">
+                <input type="file" id="plantFile" accept="image/*">
+            </div>
+
+            <label style="font-size: 13px; color: #3c5a43; font-weight: bold;">ละติจูด, ลองจิจูด (GPS):</label>
+            <input type="text" id="gpsCoord" value="13.6512, 100.4934">
+
+            <button class="btn-primary" onclick="processScan()">ประมวลผลด้วย AI (จำลอง C-Backend)</button>
+        </div>
+
+        <!-- หน้าผลลัพธ์ (Result) -->
+        <div id="view-result" class="view-section">
+            <h3 style="color: #2b4533;">ผลการวิเคราะห์</h3>
+            <div style="background: white; padding: 15px; border-radius: 15px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 10px;">
+                <div id="resultStatus" style="padding: 8px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px; background: #f8d7da; color: #721c24;">
+                    ⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)
+                </div>
+                <p><b>ชื่อพืช:</b> ไมยราบยักษ์ (Giant Sensitive Plant)</p>
+                <p><b>ระดับความมั่นใจ AI:</b> 98.4%</p>
+                <p><b>คำแนะนำ:</b> ควรกำจัดทันทีเพื่อป้องกันการแย่งสารอาหารจากพืชท้องถิ่น</p>
+                <button class="btn-primary" onclick="alert('บันทึกข้อมูลและพิกัดลงระบบ CSV สำเร็จ!'); switchView('home');">บันทึกข้อมูลลงระบบ</button>
+            </div>
+        </div>
+
+        <!-- หน้าแผนที่ (Mapping) -->
+        <div id="view-map" class="view-section">
+            <h3 style="color: #2b4533;">แผนที่พิกัดจุดพบพืช</h3>
+            <div style="background: #d1e7dd; height: 250px; border-radius: 15px; display: flex; justify-content: center; align-items: center; color: #0f5132; font-weight: bold; position: relative;">
+                🗺️ [จำลองแผนที่ GIS ป่าไม้]
+                <div style="position: absolute; top: 70px; left: 120px; background: red; color: white; padding: 2px 6px; border-radius: 50%; font-size: 10px;">📍</div>
+                <div style="position: absolute; top: 150px; left: 200px; background: green; color: white; padding: 2px 6px; border-radius: 50%; font-size: 10px;">📍</div>
+            </div>
+            <p style="font-size: 12px; color: #666;">จุดสีแดง: พืชต่างถิ่นรุกราน | จุดสีเขียว: พืชท้องถิ่น</p>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-home" onclick="switchView('home')">🏠<br>หน้าหลัก</div>
+        <div class="nav-item" id="nav-scan" onclick="switchView('scan')">📸<br>สแกนพืช</div>
+        <div class="nav-item" id="nav-map" onclick="switchView('map')">🗺️<br>แผนที่</div>
+    </div>
+</div>
+
+<script>
+    function switchView(viewName) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+        if(viewName === 'home') {
+            document.getElementById('view-home').classList.add('active');
+            document.getElementById('nav-home').classList.add('active');
+        } else if(viewName === 'scan') {
+            document.getElementById('view-scan').classList.add('active');
+            document.getElementById('nav-scan').classList.add('active');
+        } else if(viewName === 'result') {
+            document.getElementById('view-result').classList.add('active');
+        } else if(viewName === 'map') {
+            document.getElementById('view-map').classList.add('active');
+            document.getElementById('nav-map').classList.add('active');
+        }
+    }
+
+    function processScan() {
+        const fileInput = document.getElementById('plantFile');
+        if(fileInput.files.length === 0) {
+            alert('กรุณาเลือกรูปภาพพืชก่อนทำการสแกน!');
+            return;
+        }
+        alert('กำลังประมวลผลภาพถ่ายด้วยโมเดล AI...');
+        setTimeout(() => {
+            switchView('result');
+        }, 800);
+    }
+</script>
+
+</body>
+</html>
