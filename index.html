@@ -40,7 +40,7 @@
     <!-- Loading Overlay -->
     <div id="loadingOverlay">
         <div style="font-size: 30px;">⏳</div>
-        <div>ระบบ AI กำลังประมวลผลภาพถ่ายพืชและพิกัด GIS...</div>
+        <div>ระบบกำลังสกัดพิกเซลและวิเคราะห์เนื้อหาภาพถ่าย...</div>
     </div>
 
     <!-- Header -->
@@ -62,14 +62,14 @@
             <div class="welcome-card">
                 <div style="font-size: 40px;">🌿</div>
                 <h2>ยินดีต้อนรับ เจ้าหน้าที่พิทักษ์ป่า</h2>
-                <p>ระบบวิเคราะห์พันธุ์พืชอัจฉริยะ พร้อมระบบปักหมุดพิกัด GPS และ Google Maps แบบเรียลไทม์</p>
+                <p>ระบบวิเคราะห์พันธุ์พืชจากข้อมูลภาพถ่าย พร้อมปักหมุด GPS และ Google Maps แบบเรียลไทม์</p>
                 <button class="btn-primary" onclick="switchView('scan')">เริ่มสแกนพืชทันที</button>
             </div>
 
             <div class="grid-cards">
                 <div class="mini-card" onclick="switchView('scan')">
                     <h4>📸 สแกนพืช</h4>
-                    <p>อัปโหลดภาพใบหรือลำต้นเพื่อวิเคราะห์ AI</p>
+                    <p>อัปโหลดภาพใบหรือลำต้นเพื่อวิเคราะห์</p>
                 </div>
                 <div class="mini-card" onclick="switchView('map')">
                     <h4>🗺️ แผนที่ป่า</h4>
@@ -93,7 +93,7 @@
                 <button class="btn-secondary" onclick="getCurrentLocation()">📍 ใช้ตำแหน่งปัจจุบันของฉัน (GPS)</button>
             </div>
 
-            <button class="btn-primary" onclick="processScan()" style="margin-top: 5px;">ประมวลผลภาพถ่ายด้วย AI</button>
+            <button class="btn-primary" onclick="processImageData()" style="margin-top: 5px;">วิเคราะห์จากข้อมูลภาพ</button>
         </div>
 
         <!-- หน้าผลลัพธ์ (Result) -->
@@ -101,12 +101,11 @@
             <h3 style="color: #2b4533;">ผลการวิเคราะห์</h3>
             <div style="background: white; padding: 15px; border-radius: 15px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 10px;">
                 <div id="resultBox" style="padding: 8px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px;"></div>
-                <p><b>ชื่อพืช:</b> <span id="plantName">-</span></p>
-                <p><b>ระดับความมั่นใจ AI:</b> <span id="plantConfidence">-</span></p>
-                <p><b>คำแนะนำ:</b> <span id="plantAdvice">-</span></p>
+                <p><b>ชื่อพืชที่ตรวจพบ:</b> <span id="plantName">-</span></p>
+                <p><b>ค่าลักษณะพิกเซลภาพ:</b> <span id="plantFeature">-</span></p>
+                <p><b>คำแนะนำการจัดการ:</b> <span id="plantAdvice">-</span></p>
                 <p style="font-size: 12px; color: #555;"><b>📍 พิกัด GPS:</b> <span id="savedGps">-</span></p>
                 
-                <!-- ปุ่มกดเปิด Google Maps ของจริง -->
                 <a id="googleMapsLink" href="#" target="_blank" class="btn-maps">🗺️ เปิดดูพิกัดนี้ใน Google Maps</a>
 
                 <button class="btn-primary" onclick="alert('บันทึกข้อมูลและพิกัดลงระบบ CSV สำเร็จ!'); switchView('home');" style="margin-top: 5px;">บันทึกข้อมูลลงระบบ</button>
@@ -135,37 +134,6 @@
 </div>
 
 <script>
-    const plantDatabase = [
-        {
-            name: "ยางพารา (Para Rubber Tree)",
-            status: "✅ พืชเศรษฐกิจท้องถิ่น (Local Species)",
-            bgColor: "#d1e7dd", color: "#0f5132",
-            confidence: "98.7%",
-            advice: "เป็นพืชเศรษฐกิจดั้งเดิม ไม่ใช่พืชรุกรานธรรมชาติ"
-        },
-        {
-            name: "ไมยราบยักษ์ (Giant Sensitive Plant)",
-            status: "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)",
-            bgColor: "#f8d7da", color: "#721c24",
-            confidence: "96.4%",
-            advice: "ควรกำจัดทันทีเพื่อป้องกันการแย่งสารอาหารจากพืชท้องถิ่น"
-        },
-        {
-            name: "สาบเสือ (Siam Weed)",
-            status: "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)",
-            bgColor: "#f8d7da", color: "#721c24",
-            confidence: "92.8%",
-            advice: "ควรควบคุมการแพร่กระจายเนื่องจากเติบโตเร็วและคลุมดิน"
-        },
-        {
-            name: "สัก (Teak)",
-            status: "✅ พืชป่าดั้งเดิม (Local Species)",
-            bgColor: "#d1e7dd", color: "#0f5132",
-            confidence: "97.5%",
-            advice: "เป็นไม้พืชป่าดั้งเดิม ควรอนุรักษ์และสงวนพื้นที่"
-        }
-    ];
-
     function switchView(viewName) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -203,7 +171,7 @@
         }
     }
 
-    function processScan() {
+    function processImageData() {
         const fileInput = document.getElementById('plantFile');
         const gpsVal = document.getElementById('gpsCoord').value.trim();
 
@@ -212,37 +180,93 @@
             return;
         }
 
-        const fileName = fileInput.files[0].name.toLowerCase();
+        const file = fileInput.files[0];
         document.getElementById('loadingOverlay').style.display = 'flex';
 
-        setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
+        // อ่านข้อมูลภาพถ่ายและคำนวณสเปกตรัมสี (Image Processing)
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 40;
+                canvas.height = 40;
+                ctx.drawImage(img, 0, 0, 40, 40);
 
-            let selected;
-            // ถ้าอัปโหลดรูปยางพาราหรือรูปเดิม ให้แสดงผลเป็นยางพาราเป๊ะๆ
-            if(fileName.includes('dsc') || fileName.includes('rubber') || fileName.includes('para') || fileName.includes('ยาง')) {
-                selected = plantDatabase[0];
-            } else {
-                const randomIndex = Math.floor(Math.random() * (plantDatabase.length - 1)) + 1;
-                selected = plantDatabase[randomIndex];
-            }
+                const data = ctx.getImageData(0, 0, 40, 40).data;
+                let rSum = 0, gSum = 0, bSum = 0;
+                for(let i = 0; i < data.length; i += 4) {
+                    rSum += data[i];
+                    gSum += data[i+1];
+                    bSum += data[i+2];
+                }
 
-            const rBox = document.getElementById('resultBox');
-            rBox.innerText = selected.status;
-            rBox.style.backgroundColor = selected.bgColor;
-            rBox.style.color = selected.color;
+                const totalPixels = data.length / 4;
+                const avgR = Math.round(rSum / totalPixels);
+                const avgG = Math.round(gSum / totalPixels);
+                const avgB = Math.round(bSum / totalPixels);
 
-            document.getElementById('plantName').innerText = selected.name;
-            document.getElementById('plantConfidence').innerText = selected.confidence;
-            document.getElementById('plantAdvice').innerText = selected.advice;
-            document.getElementById('savedGps').innerText = gpsVal;
+                // จำแนกประเภทจากสัดส่วนสีจริงในรูปภาพ
+                let detected;
+                if (avgG > avgR && avgG > avgB) {
+                    if (avgG > 130) {
+                        detected = {
+                            name: "ไมยราบยักษ์ (Giant Sensitive Plant)",
+                            status: "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)",
+                            bgColor: "#f8d7da", color: "#721c24",
+                            feature: `เขียวสว่าง (R:${avgR}, G:${avgG}, B:${avgB})`,
+                            advice: "เป็นพืชโตเร็ว คลุมดินหนาแน่น ควรกำจัดและควบคุมพื้นที่"
+                        };
+                    } else {
+                        detected = {
+                            name: "สัก / ไม้ป่าดั้งเดิม (Teak Forest)",
+                            status: "✅ พืชป่าดั้งเดิม (Local Species)",
+                            bgColor: "#d1e7dd", color: "#0f5132",
+                            feature: `เขียวเข้มป่าดั้งเดิม (R:${avgR}, G:${avgG}, B:${avgB})`,
+                            advice: "พืชท้องถิ่นในระบบนิเวศ ควรอนุรักษ์และสงวนพื้นที่"
+                        };
+                    }
+                } else if (avgR >= avgG) {
+                    detected = {
+                        name: "สาบเสือ / พืชต่างถิ่นรุกราน (Siam Weed)",
+                        status: "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)",
+                        bgColor: "#f8d7da", color: "#721c24",
+                        feature: `โทนน้ำตาล/ดอกแห้ง (R:${avgR}, G:${avgG}, B:${avgB})`,
+                        advice: "ขยายพันธุ์เร็วด้วยเมล็ด ควรตัดถอนก่อนออกดอก"
+                    };
+                } else {
+                    detected = {
+                        name: "เฟิร์นก้านดำ / พืชพื้นถิ่น (Fern Species)",
+                        status: "✅ พืชป่าดั้งเดิม (Local Species)",
+                        bgColor: "#d1e7dd", color: "#0f5132",
+                        feature: `โทนเงา/ความชื้นสูง (R:${avgR}, G:${avgG}, B:${avgB})`,
+                        advice: "ช่วยรักษาความชุ่มชื้นในดิน ไม่พบความเสี่ยงรุกราน"
+                    };
+                }
 
-            // ผูกลิงก์ไปยัง Google Maps จริง
-            const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gpsVal)}`;
-            document.getElementById('googleMapsLink').href = mapsLink;
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
 
-            switchView('result');
-        }, 1000);
+                    const rBox = document.getElementById('resultBox');
+                    rBox.innerText = detected.status;
+                    rBox.style.backgroundColor = detected.bgColor;
+                    rBox.style.color = detected.color;
+
+                    document.getElementById('plantName').innerText = detected.name;
+                    document.getElementById('plantFeature').innerText = detected.feature;
+                    document.getElementById('plantAdvice').innerText = detected.advice;
+                    document.getElementById('savedGps').innerText = gpsVal;
+
+                    const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gpsVal)}`;
+                    document.getElementById('googleMapsLink').href = mapsLink;
+
+                    switchView('result');
+                }, 800);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 </script>
 
