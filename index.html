@@ -17,6 +17,8 @@
         .welcome-card p { color: #555; font-size: 13px; line-height: 1.4; }
         .btn-primary { background: #3c5a43; color: white; border: none; padding: 12px 24px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-primary:hover { background: #2b4533; }
+        .btn-secondary { background: #eef2ed; color: #3c5a43; border: 1px solid #3c5a43; padding: 8px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
+        .btn-secondary:hover { background: #d4edda; }
         .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .mini-card { background: white; padding: 15px; border-radius: 15px; border: 1px solid #e0e0e0; cursor: pointer; }
         .mini-card h4 { font-size: 14px; color: #3c5a43; margin-bottom: 5px; }
@@ -27,8 +29,17 @@
         .view-section { display: none; flex-direction: column; gap: 15px; }
         .view-section.active { display: flex; }
         input[type="file"], input[type="text"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 10px; margin-top: 5px; }
-        #loadingOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10; justify-content: center; align-items: center; color: white; font-weight: bold; flex-direction: column; gap: 10px; }
+        #loadingOverlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10; justify-content: center; align-items: center; color: white; font-weight: bold; flex-direction: column; gap: 10px; text-align: center; padding: 20px; }
     </style>
+
+    <!-- โหลด Google Gen AI SDK -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.run/@google/genai"
+        }
+      }
+    </script>
 </head>
 <body>
 
@@ -36,7 +47,7 @@
     <!-- Loading Overlay -->
     <div id="loadingOverlay">
         <div style="font-size: 30px;">⏳</div>
-        <div>ระบบวิเคราะห์พิกเซลภาพพืช (Pixel AI)...</div>
+        <div>Gemini AI กำลังวิเคราะห์รูปภาพพืช...</div>
     </div>
 
     <!-- Header -->
@@ -45,7 +56,7 @@
             <div class="avatar">EF</div>
             <div>
                 <h4 style="font-size: 14px; color: #2b4533;">EcoFlora Detect</h4>
-                <p style="font-size: 11px; color: #666;">ระบบตรวจจับพืชป่าและเอเลี่ยนสปีชีส์</p>
+                <p style="font-size: 11px; color: #666;">ระบบตรวจจับพืชป่าและเอเลี่ยนสปีชีส์ (Gemini AI)</p>
             </div>
         </div>
         <span style="background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">ออนไลน์</span>
@@ -58,14 +69,14 @@
             <div class="welcome-card">
                 <div style="font-size: 40px;">🌿</div>
                 <h2>ยินดีต้อนรับ เจ้าหน้าที่พิทักษ์ป่า</h2>
-                <p>ระบบวิเคราะห์ภาพถ่ายพืชอัจฉริยะ ตรวจสอบและคัดกรองพืชเอเลี่ยนสปีชีส์จากเนื้อหาภาพ</p>
+                <p>ระบบวิเคราะห์พันธุ์พืชด้วยขุมพลัง Gemini AI พร้อมระบบปักหมุดพิกัด GPS อัตโนมัติ</p>
                 <button class="btn-primary" onclick="switchView('scan')">เริ่มสแกนพืชทันที</button>
             </div>
 
             <div class="grid-cards">
                 <div class="mini-card" onclick="switchView('scan')">
-                    <h4>📸 สแกนพืช</h4>
-                    <p>อัปโหลดภาพใบหรือลำต้นเพื่อวิเคราะห์</p>
+                    <h4>📸 สแกนพืช AI</h4>
+                    <p>อัปโหลดภาพใบหรือลำต้นเพื่อให้ Gemini วิเคราะห์</p>
                 </div>
                 <div class="mini-card" onclick="switchView('map')">
                     <h4>🗺️ แผนที่ป่า</h4>
@@ -77,27 +88,31 @@
         <!-- หน้าสแกน / อัปโหลด (Scan/Upload) -->
         <div id="view-scan" class="view-section">
             <h3 style="color: #2b4533;">อัปโหลดรูปภาพพืช</h3>
-            <p style="font-size: 12px; color: #666;">ถ่ายภาพหรือเลือกไฟล์ภาพใบ/ลำต้นพืชในเขตพื้นที่ป่า</p>
+            <p style="font-size: 12px; color: #666;">เลือกไฟล์ภาพพืชในป่าที่คุณต้องการให้ Gemini AI ตรวจสอบ</p>
             
             <div style="border: 2px dashed #3c5a43; padding: 25px; text-align: center; border-radius: 15px; background: #fff;">
                 <input type="file" id="plantFile" accept="image/*">
             </div>
 
-            <label style="font-size: 13px; color: #3c5a43; font-weight: bold;">ละติจูด, ลองจิจูด (GPS):</label>
-            <input type="text" id="gpsCoord" value="13.6512, 100.4934">
+            <div>
+                <label style="font-size: 13px; color: #3c5a43; font-weight: bold;">ละติจูด, ลองจิจูด (GPS):</label>
+                <input type="text" id="gpsCoord" value="13.6512, 100.4934">
+                <button class="btn-secondary" onclick="getCurrentLocation()">📍 ใช้ตำแหน่งปัจจุบันของฉัน (GPS)</button>
+            </div>
 
-            <button class="btn-primary" onclick="processImageAnalysis()">วิเคราะห์จากเนื้อหาภาพ (AI)</button>
+            <button class="btn-primary" onclick="analyzeWithGemini()" style="margin-top: 5px;">ให้ Gemini AI วิเคราะห์ภาพ</button>
         </div>
 
         <!-- หน้าผลลัพธ์ (Result) -->
         <div id="view-result" class="view-section">
-            <h3 style="color: #2b4533;">ผลการวิเคราะห์</h3>
+            <h3 style="color: #2b4533;">ผลการวิเคราะห์จาก Gemini AI</h3>
             <div style="background: white; padding: 15px; border-radius: 15px; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 10px;">
                 <div id="resultBox" style="padding: 8px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px;"></div>
                 <p><b>ชื่อพืช:</b> <span id="plantName">-</span></p>
-                <p><b>ระดับความมั่นใจ:</b> <span id="plantConfidence">-</span></p>
-                <p><b>คำแนะนำ:</b> <span id="plantAdvice">-</span></p>
-                <button class="btn-primary" onclick="alert('บันทึกข้อมูลและพิกัดลงระบบ CSV สำเร็จ!'); switchView('home');">บันทึกข้อมูลลงระบบ</button>
+                <p><b>รายละเอียดพืช:</b> <span id="plantConfidence">-</span></p>
+                <p><b>คำแนะนำการจัดการ:</b> <span id="plantAdvice">-</span></p>
+                <p style="font-size: 12px; color: #555;"><b>📍 พิกัดที่บันทึก:</b> <span id="savedGps">-</span></p>
+                <button class="btn-primary" onclick="alert('บันทึกข้อมูลและพิกัดลงฐานข้อมูล CSV สำเร็จ!'); switchView('home');">บันทึกข้อมูลลงระบบ</button>
             </div>
         </div>
 
@@ -122,39 +137,13 @@
     </div>
 </div>
 
-<script>
-    const plantDatabase = [
-        {
-            name: "ยางพารา (Para Rubber Tree)",
-            status: "✅ พืชเศรษฐกิจท้องถิ่น (Local Species)",
-            bgColor: "#d1e7dd", color: "#0f5132",
-            confidence: "99.1%",
-            advice: "เป็นพืชเศรษฐกิจดั้งเดิม ไม่ใช่พืชรุกรานธรรมชาติ"
-        },
-        {
-            name: "ไมยราบยักษ์ (Giant Sensitive Plant)",
-            status: "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)",
-            bgColor: "#f8d7da", color: "#721c24",
-            confidence: "96.4%",
-            advice: "ควรกำจัดทันทีเพื่อป้องกันการแย่งสารอาหารจากพืชท้องถิ่น"
-        },
-        {
-            name: "สาบเสือ (Siam Weed)",
-            status: "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)",
-            bgColor: "#f8d7da", color: "#721c24",
-            confidence: "93.5%",
-            advice: "ควรควบคุมการแพร่กระจายเนื่องจากเติบโตเร็วและคลุมดิน"
-        },
-        {
-            name: "สัก (Teak)",
-            status: "✅ พืชป่าดั้งเดิม (Local Species)",
-            bgColor: "#d1e7dd", color: "#0f5132",
-            confidence: "97.8%",
-            advice: "เป็นไม้พืชป่าดั้งเดิม ควรอนุรักษ์และสงวนพื้นที่"
-        }
-    ];
+<script type="module">
+    import { GoogleGenAI } from '@google/genai';
 
-    function switchView(viewName) {
+    const apiKey = "AQ.Ab8RN6JQemAEaLYGorIxEGMrUUXvygvELmPfdZabp9wP289yBQ";
+    const ai = new GoogleGenAI({ apiKey: apiKey });
+
+    window.switchView = function(viewName) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
@@ -171,10 +160,48 @@
             document.getElementById('view-map').classList.add('active');
             document.getElementById('nav-map').classList.add('active');
         }
+    };
+
+    // ฟังก์ชันดึงพิกัด GPS ปัจจุบันจากเบราว์เซอร์
+    window.getCurrentLocation = function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude.toFixed(4);
+                    const lon = position.coords.longitude.toFixed(4);
+                    document.getElementById('gpsCoord').value = `${lat}, ${lon}`;
+                    alert('ดึงพิกัด GPS ตำแหน่งปัจจุบันสำเร็จ!');
+                },
+                (error) => {
+                    alert('ไม่สามารถดึงพิกัดได้ กรุณาอนุญาตการเข้าถึงตำแหน่ง GPS ในเบราว์เซอร์');
+                }
+            );
+        } else {
+            alert('เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง GPS');
+        }
+    };
+
+    function fileToGenerativePart(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64Data = reader.result.split(',')[1];
+                resolve({
+                    inlineData: {
+                        data: base64Data,
+                        mimeType: file.type
+                    }
+                });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 
-    function processImageAnalysis() {
+    window.analyzeWithGemini = async function() {
         const fileInput = document.getElementById('plantFile');
+        const gpsVal = document.getElementById('gpsCoord').value;
+
         if(fileInput.files.length === 0) {
             alert('กรุณาเลือกรูปภาพพืชก่อนทำการสแกน!');
             return;
@@ -183,63 +210,51 @@
         const file = fileInput.files[0];
         document.getElementById('loadingOverlay').style.display = 'flex';
 
-        // ใช้ Canvas อ่านค่าพิกเซลสีจากรูปภาพจริงๆ (Image Processing)
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = 50;
-                canvas.height = 50;
-                ctx.drawImage(img, 0, 0, 50, 50);
-                
-                const imgData = ctx.getImageData(0, 0, 50, 50).data;
-                let rSum = 0, gSum = 0, bSum = 0;
-                let pixelCount = imgData.length / 4;
+        try {
+            const imagePart = await fileToGenerativePart(file);
+            const prompt = `วิเคราะห์ภาพถ่ายพืชนี้แล้วตอบกลับเฉพาะโครงสร้าง JSON ภาษาไทยสั้นๆ เท่านั้น (ห้ามมีคำเกริ่นหรือข้อความอื่น):
+            {
+              "name": "ชื่อพืช",
+              "status": "พืชต่างถิ่นรุกราน" หรือ "พืชท้องถิ่น",
+              "detail": "รายละเอียดหรือลักษณะเด่นสั้นๆ",
+              "advice": "คำแนะนำในการจัดการ"
+            }`;
 
-                for (let i = 0; i < imgData.length; i += 4) {
-                    rSum += imgData[i];
-                    gSum += imgData[i+1];
-                    bSum += imgData[i+2];
-                }
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: [prompt, imagePart]
+            });
 
-                const avgR = rSum / pixelCount;
-                const avgG = gSum / pixelCount;
-                const avgB = bSum / pixelCount;
+            document.getElementById('loadingOverlay').style.display = 'none';
 
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.display = 'none';
+            let textResult = response.text.trim();
+            textResult = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
+            const resultObj = JSON.parse(textResult);
 
-                    let selected;
-                    // ถ้าภาพมีโทนสีน้ำตาล/ลำต้นสูง (เช่น ภาพสวนยางพาราที่มีลำต้นไม้เรียงราย)
-                    if (avgR > avgG && avgR > 100) {
-                        selected = plantDatabase[0]; // ยางพารา
-                    } else if (avgG > avgR && avgG > 110) {
-                        // ถ้าภาพเน้นสีเขียวเข้ม/ใบไม้หนา
-                        selected = plantDatabase[3]; // ต้นสัก / พืชป่า
-                    } else {
-                        // สลับสับเปลี่ยนสำหรับพืชอื่นๆ
-                        const randomIndex = Math.floor(Math.random() * plantDatabase.length);
-                        selected = plantDatabase[randomIndex];
-                    }
+            const rBox = document.getElementById('resultBox');
+            if(resultObj.status.includes('รุกราน') || resultObj.status.includes('Invasive')) {
+                rBox.innerText = "⚠️ ตรวจพบพืชต่างถิ่นรุกราน (Invasive Species)";
+                rBox.style.backgroundColor = "#f8d7da";
+                rBox.style.color = "#721c24";
+            } else {
+                rBox.innerText = "✅ พืชท้องถิ่น / ป่าดั้งเดิม (Local Species)";
+                rBox.style.backgroundColor = "#d1e7dd";
+                rBox.style.color = "#0f5132";
+            }
 
-                    const rBox = document.getElementById('resultBox');
-                    rBox.innerText = selected.status;
-                    rBox.style.backgroundColor = selected.bgColor;
-                    rBox.style.color = selected.color;
+            document.getElementById('plantName').innerText = resultObj.name;
+            document.getElementById('plantConfidence').innerText = resultObj.detail;
+            document.getElementById('plantAdvice').innerText = resultObj.advice;
+            document.getElementById('savedGps').innerText = gpsVal;
 
-                    document.getElementById('plantName').innerText = selected.name;
-                    document.getElementById('plantConfidence').innerText = selected.confidence;
-                    document.getElementById('plantAdvice').innerText = selected.advice;
+            window.switchView('result');
 
-                    switchView('result');
-                }, 1000);
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
+        } catch (error) {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            console.error(error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Gemini API โปรดตรวจสอบ API Key หรืออินเทอร์เน็ต');
+        }
+    };
 </script>
 
 </body>
