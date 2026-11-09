@@ -19,6 +19,8 @@
         .btn-primary:hover { background: #2b4533; }
         .btn-secondary { background: #eef2ed; color: #3c5a43; border: 1px solid #3c5a43; padding: 8px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s; }
         .btn-secondary:hover { background: #d4edda; }
+        .btn-maps { background: #1a73e8; color: white; border: none; padding: 10px 15px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none; margin-top: 5px; transition: 0.2s; }
+        .btn-maps:hover { background: #1557b0; }
         .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .mini-card { background: white; padding: 15px; border-radius: 15px; border: 1px solid #e0e0e0; cursor: pointer; }
         .mini-card h4 { font-size: 14px; color: #3c5a43; margin-bottom: 5px; }
@@ -47,7 +49,7 @@
     <!-- Loading Overlay -->
     <div id="loadingOverlay">
         <div style="font-size: 30px;">⏳</div>
-        <div>Gemini AI กำลังวิเคราะห์รูปภาพพืช...</div>
+        <div>Gemini AI กำลังวิเคราะห์รูปภาพพืชและพิกัด GIS...</div>
     </div>
 
     <!-- Header -->
@@ -56,7 +58,7 @@
             <div class="avatar">EF</div>
             <div>
                 <h4 style="font-size: 14px; color: #2b4533;">EcoFlora Detect</h4>
-                <p style="font-size: 11px; color: #666;">ระบบตรวจจับพืชป่าและเอเลี่ยนสปีชีส์ (Gemini AI)</p>
+                <p style="font-size: 11px; color: #666;">ระบบตรวจจับพืชป่า (Gemini AI + Google Maps)</p>
             </div>
         </div>
         <span style="background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold;">ออนไลน์</span>
@@ -69,7 +71,7 @@
             <div class="welcome-card">
                 <div style="font-size: 40px;">🌿</div>
                 <h2>ยินดีต้อนรับ เจ้าหน้าที่พิทักษ์ป่า</h2>
-                <p>ระบบวิเคราะห์พันธุ์พืชด้วยขุมพลัง Gemini AI พร้อมระบบปักหมุดพิกัด GPS อัตโนมัติ</p>
+                <p>ระบบวิเคราะห์พันธุ์พืชด้วย Gemini AI พร้อมเชื่อมต่อพิกัดแผนที่ Google Maps แบบเรียลไทม์</p>
                 <button class="btn-primary" onclick="switchView('scan')">เริ่มสแกนพืชทันที</button>
             </div>
 
@@ -111,8 +113,12 @@
                 <p><b>ชื่อพืช:</b> <span id="plantName">-</span></p>
                 <p><b>รายละเอียดพืช:</b> <span id="plantConfidence">-</span></p>
                 <p><b>คำแนะนำการจัดการ:</b> <span id="plantAdvice">-</span></p>
-                <p style="font-size: 12px; color: #555;"><b>📍 พิกัดที่บันทึก:</b> <span id="savedGps">-</span></p>
-                <button class="btn-primary" onclick="alert('บันทึกข้อมูลและพิกัดลงฐานข้อมูล CSV สำเร็จ!'); switchView('home');">บันทึกข้อมูลลงระบบ</button>
+                <p style="font-size: 12px; color: #555;"><b>📍 พิกัด GPS:</b> <span id="savedGps">-</span></p>
+                
+                <!-- ปุ่มกดเปิด Google Maps ของจริง -->
+                <a id="googleMapsLink" href="#" target="_blank" class="btn-maps">🗺️ เปิดดูพิกัดนี้ใน Google Maps</a>
+
+                <button class="btn-primary" onclick="alert('บันทึกข้อมูลและพิกัดลงฐานข้อมูล CSV สำเร็จ!'); switchView('home');" style="margin-top: 5px;">บันทึกข้อมูลลงระบบ</button>
             </div>
         </div>
 
@@ -162,7 +168,6 @@
         }
     };
 
-    // ฟังก์ชันดึงพิกัด GPS ปัจจุบันจากเบราว์เซอร์
     window.getCurrentLocation = function() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -200,7 +205,7 @@
 
     window.analyzeWithGemini = async function() {
         const fileInput = document.getElementById('plantFile');
-        const gpsVal = document.getElementById('gpsCoord').value;
+        const gpsVal = document.getElementById('gpsCoord').value.trim();
 
         if(fileInput.files.length === 0) {
             alert('กรุณาเลือกรูปภาพพืชก่อนทำการสแกน!');
@@ -246,6 +251,10 @@
             document.getElementById('plantConfidence').innerText = resultObj.detail;
             document.getElementById('plantAdvice').innerText = resultObj.advice;
             document.getElementById('savedGps').innerText = gpsVal;
+
+            // ผูกลิงก์พิกัดเข้ากับ Google Maps ของจริง
+            const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gpsVal)}`;
+            document.getElementById('googleMapsLink').href = mapsLink;
 
             window.switchView('result');
 
